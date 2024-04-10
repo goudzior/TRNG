@@ -1,15 +1,3 @@
-This Python library provides a cryptographically secure pseudorandom number generator.
-Specifically, it implements **HMAC_DRBG** (SHA-512) as specified in
-[NIST SP 800-90A](http://csrc.nist.gov/publications/nistpubs/800-90A/SP800-90A.pdf).
+### An implementation of a True Random Number Generator for my Security of ICT systems course. 
 
-For simplicity, this library currently does not track the seed period,
-so the `generate` function always returns the requested number of bytes.
-It is the user's responsibility to periodically reseed the PRNG.
-
-This library is tested with NIST-provided test vectors.
-To run the tests:
-
-    $ python hmac_drbg_tests.py 
-    Passed all 224 tests.
-
-**See also**: [go-crypto](https://github.com/davidlazar/go-crypto).
+This generator is based on [Koushik, Rahul & Perichiappan, Aravind & Om, Hari & Banerji, Abhishek & Eswaran, Sivaraman & Honnavalli, Prasad. (2021). Generation of True Random Numbers using Entropy Sources Present within Portable Computers. 1-6. 10.1109/CONECCT52877.2021.9622734.](https://www.researchgate.net/publication/356873956_Generation_of_True_Random_Numbers_using_Entropy_Sources_Present_within_Portable_Computers) which requires a SP 800-90A approved PRNG.
