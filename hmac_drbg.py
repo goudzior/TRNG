@@ -35,7 +35,6 @@ drbg = DRBG(seed)
 
 # Generate 5 random numbers (test purposes)
 for i in range(5):
-    drbg.reseed
     generated_number = int.from_bytes(drbg.generate(1))
     print(generated_number)
 
