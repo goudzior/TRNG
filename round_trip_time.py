@@ -4,28 +4,18 @@ from time import perf_counter_ns
 
 
 def measure_round_trip_time(url):
-    start_time = perf_counter_ns()
-    response = requests.get(url)
-    end_time = perf_counter_ns()
-    round_trip_time = end_time - start_time
-    return round_trip_time
+    try:
+        start_time = perf_counter_ns()
+        response = requests.get(url)
+        end_time = perf_counter_ns()
+        round_trip_time = end_time - start_time
+        return round_trip_time
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
 
 def save_to_file(data, filename):
     with open(filename, 'w') as file:
-        file.write(str(data) + '\n')
+        file.write(''.join(str(d) for d in data))
 
-def main():
-    url = input("Enter the URL to send HTTP GET request: ")
-    num_measurements = 10
-    filename = 'RTT_ns.txt'
-
-    print("Measuring round trip times...")
-    for _ in range(num_measurements):
-        round_trip_time = measure_round_trip_time(url)
-        print(f"Round trip time: {round_trip_time} nanoseconds")
-        save_to_file(round_trip_time, filename)
-
-    print(f"Round trip times saved to {filename}")
-
-if __name__ == "__main__":
-    main()

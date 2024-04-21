@@ -29,12 +29,4 @@ class DRBG(object):
 
         return xs[:n]
 
-# Generating random seed using secrets library
-seed = (secrets.randbits(256)).to_bytes(32, byteorder='big')
-drbg = DRBG(seed)
-
-# Generate 5 random numbers (test purposes)
-for i in range(5):
-    generated_number = int.from_bytes(drbg.generate(1), byteorder='big')
-    print(generated_number)
 
