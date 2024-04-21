@@ -1,10 +1,12 @@
 import requests
 import time
+from time import perf_counter_ns
+
 
 def measure_round_trip_time(url):
-    start_time = time.time_ns()
+    start_time = perf_counter_ns()
     response = requests.get(url)
-    end_time = time.time_ns()
+    end_time = perf_counter_ns()
     round_trip_time = end_time - start_time
     return round_trip_time
 
