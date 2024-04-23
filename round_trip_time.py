@@ -17,5 +17,5 @@ def measure_round_trip_time(url):
 
 def save_to_file(data, filename):
     with open(filename, 'w') as file:
-        file.write(''.join(str(d) for d in data))
-
+        for d in data:
+            file.write(str(d) + '\n')

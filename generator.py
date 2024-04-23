@@ -1,22 +1,39 @@
 import hmac_drbg as prng
 import round_trip_time as rtt
+import numpy as np
+import csv
 
 
 def main():
-    url = 'https://' + input("Enter the URL to send HTTP GET request: ")
     num_measurements = 10
-    filename = 'RTT_ns.txt'
+    num_urls = 10
+    rtt_data = 'RTT_ns.txt'
+    url_data = 'top_websites.txt'
 
-    print("Measuring round trip times...")
-    measurements = []
-    for _ in range(num_measurements):
-        round_trip_time = rtt.measure_round_trip_time(url)
-        print(f"Round trip time: {round_trip_time} nanoseconds")
-        measurements.append(round_trip_time)
+    def read_random_url(file):
+        with open(file, 'r') as file:
+            # Read all lines from the text file
+            lines = file.readlines()
+            # Choose a random line (URL) from the list
+            random_url = prng.secrets.choice(lines).strip()  # Strip to remove newline characters
+        return random_url
 
-    # Save round trip times to file
-    rtt.save_to_file(measurements, filename)
-    print(f"Round trip times saved to {filename}")
+    # print("Measuring round trip times...")
+    with open(rtt_data, 'w') as file:
+        url = 'https://' + read_random_url(url_data)
+        print(f"Measuring for: {url}")
+        for _ in range(num_measurements):
+            round_trip_time = rtt.measure_round_trip_time(url)
+            print(f"Round trip time: {round_trip_time} nanoseconds")
+            file.write(str(round_trip_time) + '\n')
+
+    print(f"Round trip times saved to {rtt_data}")
+
+    # check bitlength of rtt file
+    # with open('rtt_ns.txt', 'rb') as file:
+    #    file.seek(0, 2)  # Move the file pointer to the end of the file
+    #     bit_length = file.tell() * 8  # Get the byte length and convert it to bits
+    #    print(f"Bit length of rtt_ns.txt: {bit_length} bits")
 
     # Generating random seed using secrets library
     seed = (prng.secrets.randbits(256)).to_bytes(32, byteorder='big')
