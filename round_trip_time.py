@@ -12,7 +12,7 @@ def measure_round_trip_time(url):
         return round_trip_time
     except Exception as e:
         print(f"An error occurred: {e}")
-        return None
+        return 0
 
 
 def save_to_file(data, filename):
