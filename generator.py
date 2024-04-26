@@ -2,7 +2,30 @@ import hmac_drbg as prng
 import round_trip_time as rtt
 import numpy as np
 import csv
+    
+def check_bitlength(file):
+    with open(file, 'rb') as file:
+        file.seek(0, 2)  # Move the file pointer to the end of the file
+        bit_length = file.tell() * 8  # Get the byte length and convert it to bits
+    return bit_length
 
+def read_random_url(file):
+    with open(file, 'r') as file:
+        # Read all lines from the text file
+        lines = file.readlines()
+        # Choose a random line (URL) from the list
+        random_url = prng.secrets.choice(lines).strip()  # Strip to remove newline characters
+    return random_url
+    
+def extract_entropy(filename):
+    entropy_bits = ''
+    with open(filename, 'r') as file:
+        for line in file:
+            # Convert each round trip time to binary representation and append to the bitstring
+            round_trip_time = int(line.strip())
+            binary_rep = bin(round_trip_time)[2:]  # Convert to binary, strip '0b' prefix
+            entropy_bits += binary_rep
+    return entropy_bits
 
 def main():
     bitlength = 1
@@ -10,30 +33,6 @@ def main():
     num_urls = 1
     rtt_data = 'RTT_ns.txt'
     url_data = 'top_websites.txt'
-    
-    def check_bitlength(file):
-        with open(file, 'rb') as file:
-            file.seek(0, 2)  # Move the file pointer to the end of the file
-            bit_length = file.tell() * 8  # Get the byte length and convert it to bits
-        return bit_length
-
-    def read_random_url(file):
-        with open(file, 'r') as file:
-            # Read all lines from the text file
-            lines = file.readlines()
-            # Choose a random line (URL) from the list
-            random_url = prng.secrets.choice(lines).strip()  # Strip to remove newline characters
-        return random_url
-    
-    def extract_entropy(filename):
-        entropy_bits = ''
-        with open(filename, 'r') as file:
-            for line in file:
-                # Convert each round trip time to binary representation and append to the bitstring
-                round_trip_time = int(line.strip())
-                binary_rep = bin(round_trip_time)[2:]  # Convert to binary, strip '0b' prefix
-                entropy_bits += binary_rep
-        return entropy_bits
 
     with open(rtt_data, 'w') as file:  # Open the file in write mode to clear its contents
         pass
