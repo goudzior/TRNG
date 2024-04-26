@@ -28,7 +28,7 @@ def extract_entropy(filename):
     return entropy_bits
 
 def main():
-    bitlength = 1
+    bytes = 2
     num_measurements = 1
     num_urls = 1
     rtt_data = 'RTT_ns.txt'
@@ -40,30 +40,26 @@ def main():
     with open(rtt_data, 'a') as file:
         for i in range(num_urls):
             url = 'https://' + read_random_url(url_data)
-            #print(f"Measuring for: {url}")
+            print(f"Measuring for: {url}")
             for _ in range(num_measurements):
                 round_trip_time = rtt.measure_round_trip_time(url)
-                #print(f"Round trip time: {round_trip_time} nanoseconds")
+                print(f"Round trip time: {round_trip_time} nanoseconds")
                 file.write(str(round_trip_time) + '\n')
-    #print(f"Round trip times saved to {rtt_data}")
+    print(f"Round trip times saved to {rtt_data}")
 
     # Display the bitlength of rtt file
-    #print(f"Bit length of rtt_ns.txt: {check_bitlength(rtt_data)} bits")
+    # print(f"Bit length of rtt_ns.txt: {check_bitlength(rtt_data)} bits")
     # TODO => add health tests
 
-    bitstring = extract_entropy('RTT_ns.txt')
-
-    # Generating random seed using secrets library
-    seed = (prng.secrets.randbits(256)).to_bytes(32, byteorder='big')
+    #bitstring = extract_entropy('RTT_ns.txt')
     
     # Generating a pseudorandom number
+    seed = (prng.secrets.randbits(256)).to_bytes(32, byteorder='big')
     drbg = prng.DRBG(seed)
-    random_bits = drbg.generate(len(bitstring))
-    drbg_bits = ''.join(format(byte, '08b') for byte in random_bits)
+    random_bits = drbg.generate(bytes)
+    
 
-    print(f'Entropy bitsring: {bitstring}')
-    print(f'DRBG bitsring: {drbg_bits}')
-
+    # print(f'Entropy bitsring: {bitstring}')
 
 
 if __name__ == "__main__":
