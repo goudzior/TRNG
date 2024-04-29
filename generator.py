@@ -1,7 +1,8 @@
 import hmac_drbg as prng
 import round_trip_time as rtt
 import os
-    
+import time
+
 def check_bitlength(file):
     with open(file, 'rb') as file:
         file.seek(0, 2)  # Move the file pointer to the end of the file
@@ -27,19 +28,29 @@ def extract_entropy(filename):
     return entropy_bits
 
 def main():
+    start_time = time.time()
+
     random_bytes = 2
 
-    num_measurements = 6
-    num_urls = 5
+    num_measurements = 3
+    num_urls = 3
 
     rtt_folder= 'RTTS'
     url_data = 'top_websites.txt'
+
+    for filename in os.listdir(rtt_folder):
+        file_path = os.path.join(rtt_folder, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(f"Failed to delete {file_path}. Error: {e}")
 
     for i in range(num_urls):
         url = 'https://' + read_random_url(url_data)
         print(f"Measuring for: {url}")
 
-        # Create a new file for each site
+        # Create a new file for each site-+
         rtt_file = os.path.join(rtt_folder, f'{i + 1}.txt')
         with open(rtt_file, 'w') as file:
             for _ in range(num_measurements):
@@ -62,6 +73,9 @@ def main():
 
     # extracting entropy
     # entropy = extract_entropy('RTT_ns.txt')
+
+    elapsed_time = time.time() - start_time
+    print(f"Elapsed time: {elapsed_time:.2f} seconds")
 
 
 if __name__ == "__main__":
