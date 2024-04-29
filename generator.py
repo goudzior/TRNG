@@ -1,7 +1,6 @@
 import hmac_drbg as prng
 import round_trip_time as rtt
-import numpy as np
-import csv
+import os
     
 def check_bitlength(file):
     with open(file, 'rb') as file:
@@ -28,24 +27,27 @@ def extract_entropy(filename):
     return entropy_bits
 
 def main():
-    bytes = 2
-    num_measurements = 1
-    num_urls = 1
-    rtt_data = 'RTT_ns.txt'
+    random_bytes = 2
+
+    num_measurements = 6
+    num_urls = 5
+
+    rtt_folder= 'RTTS'
     url_data = 'top_websites.txt'
 
-    with open(rtt_data, 'w') as file:  # Open the file in write mode to clear its contents
-        pass
+    for i in range(num_urls):
+        url = 'https://' + read_random_url(url_data)
+        print(f"Measuring for: {url}")
 
-    with open(rtt_data, 'a') as file:
-        for i in range(num_urls):
-            url = 'https://' + read_random_url(url_data)
-            print(f"Measuring for: {url}")
+        # Create a new file for each site
+        rtt_file = os.path.join(rtt_folder, f'{i + 1}.txt')
+        with open(rtt_file, 'w') as file:
             for _ in range(num_measurements):
                 round_trip_time = rtt.measure_round_trip_time(url)
                 print(f"Round trip time: {round_trip_time} nanoseconds")
                 file.write(str(round_trip_time) + '\n')
-    print(f"Round trip times saved to {rtt_data}")
+
+        print(f"Round trip times saved to {rtt_file}")
 
     # Display the bitlength of rtt file
     # print(f"Bit length of rtt_ns.txt: {check_bitlength(rtt_data)} bits")
@@ -56,10 +58,10 @@ def main():
     # Generating a pseudorandom number
     seed = (prng.secrets.randbits(256)).to_bytes(32, byteorder='big')
     drbg = prng.DRBG(seed)
-    random_bits = drbg.generate(bytes)
-    
+    prng_value = drbg.generate(random_bytes)
 
-    # print(f'Entropy bitsring: {bitstring}')
+    # extracting entropy
+    # entropy = extract_entropy('RTT_ns.txt')
 
 
 if __name__ == "__main__":
