@@ -79,7 +79,6 @@ def main():
     except Exception as e:
         print(f"Error: {e}")
 
-
    # Create threads for measuring round-trip times
     threads = []
     for i in range(num_urls):
@@ -95,30 +94,27 @@ def main():
 
     # TODO => add health tests
 
-    
     # Generating a pseudorandom number
     seed = (prng.secrets.randbits(256)).to_bytes(32, byteorder='big')
     drbg = prng.DRBG(seed)
     prng_value = drbg.generate(random_bytes)
-
 
     # Extracting entropy from all measurments
     entropy_bits = extract_entropy(rtt_folder)
     combined_entropy_bits = combine_entropy_bits([entropy_bits])
 
     # Trim both PRNG value and combined entropy bits
-    trimmed_prng_value = trim_bits(int.from_bytes(prng_value, "big"), number_bitlength)
-    trimmed_combined_entropy_bits = trim_bits(int.from_bytes(combined_entropy_bits, "big"), number_bitlength)
+    prng_value = trim_bits(int.from_bytes(prng_value, "big"), number_bitlength)
+    combined_entropy_bits = trim_bits(int.from_bytes(combined_entropy_bits, "big"), number_bitlength)
 
-    print(trimmed_prng_value)
-    print(trimmed_combined_entropy_bits)
+    # XOR your results 
+    random_number = prng_value ^ combined_entropy_bits
 
-    random_number = trimmed_prng_value ^ trimmed_combined_entropy_bits
-
-    print(f"Trimmed prng_value: {random_number}")
+    print(f"Random: {random_number}")
 
     #Code run-time
     elapsed_time = time.time() - start_time
+
     print(f"Elapsed time: {elapsed_time:.2f} seconds")
     
 
