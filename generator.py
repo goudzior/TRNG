@@ -2,6 +2,7 @@ import hmac_drbg as prng
 import round_trip_time as rtt
 import os
 import time
+import threading
 
 def check_bitlength(file):
     with open(file, 'rb') as file:
@@ -27,17 +28,27 @@ def extract_entropy(filename):
             entropy_bits += binary_rep
     return entropy_bits
 
+def measure_rtt(url, rtt_file, num_measurements):
+    for _ in range(num_measurements):
+        round_trip_time = rtt.measure_round_trip_time(url)
+        print(f"Round trip time for {url}: {round_trip_time} nanoseconds")
+        with open(rtt_file, 'a') as file:
+            file.write(str(round_trip_time) + '\n')
+    print(f"Round trip times for {url} saved to {rtt_file}")
+
 def main():
     start_time = time.time()
 
+    MAX_THREADS = 16 
     random_bytes = 2
 
-    num_measurements = 3
-    num_urls = 3
+    num_measurements = 2 
+    num_urls = 20
 
     rtt_folder= 'RTTS'
-    url_data = 'top_websites.txt'
+    url_data = 'top_websites100.txt'
 
+    # Clear folder before measurments
     for filename in os.listdir(rtt_folder):
         file_path = os.path.join(rtt_folder, filename)
         try:
@@ -46,19 +57,24 @@ def main():
         except Exception as e:
             print(f"Failed to delete {file_path}. Error: {e}")
 
+   # Create threads for measuring round-trip times
+    threads = []
     for i in range(num_urls):
         url = 'https://' + read_random_url(url_data)
-        print(f"Measuring for: {url}")
-
-        # Create a new file for each site-+
         rtt_file = os.path.join(rtt_folder, f'{i + 1}.txt')
-        with open(rtt_file, 'w') as file:
-            for _ in range(num_measurements):
-                round_trip_time = rtt.measure_round_trip_time(url)
-                print(f"Round trip time: {round_trip_time} nanoseconds")
-                file.write(str(round_trip_time) + '\n')
+        thread = threading.Thread(target=measure_rtt, args=(url, rtt_file, num_measurements))
+        threads.append(thread)
+        thread.start()
 
-        print(f"Round trip times saved to {rtt_file}")
+        # If the number of active threads reaches the maximum, wait for them to finish before starting new ones
+        if len(threads) >= MAX_THREADS:
+            for t in threads:
+                t.join()
+            threads = []  # Clear the threads list
+
+    # Wait for any remaining threads to complete
+    for thread in threads:
+        thread.join()
 
     # Display the bitlength of rtt file
     # print(f"Bit length of rtt_ns.txt: {check_bitlength(rtt_data)} bits")
