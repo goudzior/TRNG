@@ -75,13 +75,13 @@ def generate_random_number(num_urls, num_measurements, random_bytes, bit_length,
     return random_number
 
 def main():
-    num_iterations = 5
+    num_iterations = 1000
     num_urls = 2
     num_measurements = 2
     random_bytes = 2
-    bit_length = 5
+    bit_length = 10
     rtt_folder = 'RTTS'
-    url_data = 'top_websites100.txt'
+    url_data = 'top_websites2.txt'
  
     random_numbers = []
 
@@ -96,6 +96,11 @@ def main():
         print(f"Iteration {i}: {number}")
 
     print(f"Total elapsed time: {elapsed_time:.2f} seconds")
+
+    # Zapis wyników do pliku
+    with open('random_numbers.txt', 'w') as file:
+        for number in random_numbers:
+            file.write(f'{number}\n')
 
 if __name__ == "__main__":
     main()
