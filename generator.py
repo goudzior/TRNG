@@ -3,6 +3,8 @@ import time
 import threading
 import hmac_drbg as prng
 import round_trip_time as rtt
+import matplotlib.pyplot as plt
+import numpy as np
 
 def read_random_url(file_path):
     # Reads a random URL from the specified file.
@@ -74,14 +76,21 @@ def generate_random_number(num_urls, num_measurements, random_bytes, bit_length,
 
     return random_number
 
+def calculate_entropy(random_numbers):
+    # Calculate the entropy of the random numbers.
+    probabilities, _ = np.histogram(random_numbers, bins=255, density=True)
+    entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))  # Add a small value to avoid log(0)
+    return entropy
+
 def main():
-    num_iterations = 1000
-    num_urls = 2
-    num_measurements = 2
-    random_bytes = 2
-    bit_length = 10
+    num_iterations = 10000
+    num_urls = 1
+    num_measurements = 100
+    random_bytes = 1
+    bit_length = 8
     rtt_folder = 'RTTS'
     url_data = 'top_websites2.txt'
+    output_file = 'random_numbers.png'
  
     random_numbers = []
 
@@ -97,10 +106,22 @@ def main():
 
     print(f"Total elapsed time: {elapsed_time:.2f} seconds")
 
-    # Zapis wyników do pliku
+    # Write results to a file
     with open('random_numbers.txt', 'w') as file:
         for number in random_numbers:
             file.write(f'{number}\n')
+
+    # Calculate and print entropy
+    entropy = calculate_entropy(random_numbers)
+    print(f"Entropy of random numbers: {entropy:.6f} bits per symbol")
+
+    # Plot histogram
+    plt.hist(random_numbers, bins=255, alpha=0.7, color='blue', density=True)  # Density set to True for probability
+    plt.title('Histogram of random numbers')
+    plt.xlabel('Value)')
+    plt.ylabel('Probability')
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')  # Save the plot as PNG file
+    plt.show()
 
 if __name__ == "__main__":
     main()
