@@ -1,6 +1,6 @@
 import os
 import time
-import threading
+import asyncio
 import hmac_drbg as prng
 import round_trip_time as rtt
 import matplotlib.pyplot as plt
@@ -12,12 +12,6 @@ def read_random_url(file_path):
         lines = file.readlines()
     return prng.secrets.choice(lines).strip()
 
-def check_file_size_in_bits(file_path):
-    # Returns the size of a given file in bits.
-    with open(file_path, 'rb') as file:
-        file.seek(0, os.SEEK_END)
-        return file.tell() * 8
-
 def extract_entropy(folder):
     # Collects entropy from binary files within a folder.
     entropy_bits = b''
@@ -27,10 +21,6 @@ def extract_entropy(folder):
             with open(file_path, 'rb') as file:
                 entropy_bits += file.read()
     return entropy_bits
-
-def combine_entropy_bits(entropy_list):
-    # Combines multiple entropy byte arrays into one.
-    return b''.join(entropy_list)
 
 def trim_bits(value, num_bits):
     # Masks the value to retain only the most significant 'num_bits' bits.
@@ -46,46 +36,36 @@ def clear_folder(folder):
             if os.path.isfile(file_path):
                 os.unlink(file_path)
 
-def create_rtt_threads(num_urls, url_data, rtt_folder, num_measurements):
+async def create_rtt_threads(num_urls, url_data, rtt_folder, num_measurements):
     # Creates and starts threads for RTT measurements.
-    threads = []
+    tasks = []
     for i in range(num_urls):
         url = 'https://' + read_random_url(url_data)
         rtt_file = os.path.join(rtt_folder, f'{i + 1}.txt')
-        thread = threading.Thread(target=rtt.measure_rtt, args=(url, rtt_file, num_measurements))
-        threads.append(thread)
-        thread.start()
-    return threads
+        task = asyncio.create_task(rtt.measure_rtt(url, rtt_file, num_measurements))
+        tasks.append(task)
+    await asyncio.gather(*tasks)
 
-def generate_random_number(num_urls, num_measurements, random_bytes, bit_length, rtt_folder, url_data):
+async def generate_random_number(num_urls, num_measurements, random_bytes, bit_length, rtt_folder, url_data):
     # Generates a random number.
-    clear_folder(rtt_folder)
-    threads = create_rtt_threads(num_urls, url_data, rtt_folder, num_measurements)
-    for thread in threads:
-        thread.join()
+    await create_rtt_threads(num_urls, url_data, rtt_folder, num_measurements)
 
     entropy_bits = extract_entropy(rtt_folder)
-    combined_entropy_bits = combine_entropy_bits([entropy_bits])
     seed = prng.secrets.randbits(256).to_bytes(32, byteorder='big')
     drbg = prng.DRBG(seed)
     prng_value = drbg.generate(random_bytes)
 
     prng_value = trim_bits(int.from_bytes(prng_value, 'big'), bit_length)
-    combined_entropy_bits = trim_bits(int.from_bytes(combined_entropy_bits, 'big'), bit_length)
-    random_number = prng_value ^ combined_entropy_bits
+    entropy_bits = trim_bits(int.from_bytes(entropy_bits, 'big'), bit_length)
+    #print (f"Prng: {prng_value} Entropy: {entropy_bits}  ")
+    random_number = prng_value ^ entropy_bits
 
     return random_number
 
-def calculate_entropy(random_numbers):
-    # Calculate the entropy of the random numbers.
-    probabilities, _ = np.histogram(random_numbers, bins=255, density=True)
-    entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))  # Add a small value to avoid log(0)
-    return entropy
-
-def main():
-    num_iterations = 10000
+async def main():
+    num_iterations = 10000  # Number of random numbers to generate
     num_urls = 1
-    num_measurements = 100
+    num_measurements = 2
     random_bytes = 1
     bit_length = 8
     rtt_folder = 'RTTS'
@@ -95,8 +75,8 @@ def main():
     random_numbers = []
 
     start_time = time.time()
-    for i in range(num_iterations):
-        random_number = generate_random_number(num_urls, num_measurements, random_bytes, bit_length, rtt_folder, url_data)
+    for _ in range(num_iterations):
+        random_number = await generate_random_number(num_urls, num_measurements, random_bytes, bit_length, rtt_folder, url_data)
         random_numbers.append(random_number)
     elapsed_time = time.time() - start_time
 
@@ -112,8 +92,8 @@ def main():
             file.write(f'{number}\n')
 
     # Calculate and print entropy
-    entropy = calculate_entropy(random_numbers)
-    print(f"Entropy of random numbers: {entropy:.6f} bits per symbol")
+    #entropy = await calculate_entropy(random_numbers)
+    #print(f"Entropy of random numbers: {entropy:.6f} bits per symbol")
 
     # Plot histogram
     plt.hist(random_numbers, bins=255, alpha=0.7, color='blue', density=True)  # Density set to True for probability
@@ -124,4 +104,5 @@ def main():
     plt.show()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
+
