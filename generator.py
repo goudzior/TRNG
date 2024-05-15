@@ -1,20 +1,17 @@
 import os
 import time
+import concurrent.futures
 import threading
 import hmac_drbg as prng
 import round_trip_time as rtt
+import matplotlib.pyplot as plt
+import numpy as np
 
 def read_random_url(file_path):
     # Reads a random URL from the specified file.
     with open(file_path, 'r') as file:
         lines = file.readlines()
     return prng.secrets.choice(lines).strip()
-
-def check_file_size_in_bits(file_path):
-    # Returns the size of a given file in bits.
-    with open(file_path, 'rb') as file:
-        file.seek(0, os.SEEK_END)
-        return file.tell() * 8
 
 def extract_entropy(folder):
     # Collects entropy from binary files within a folder.
@@ -23,12 +20,12 @@ def extract_entropy(folder):
         file_path = os.path.join(folder, filename)
         if os.path.isfile(file_path):
             with open(file_path, 'rb') as file:
-                entropy_bits += file.read()
+                entropy_bits += file.read().strip()
     return entropy_bits
 
 def combine_entropy_bits(entropy_list):
     # Combines multiple entropy byte arrays into one.
-    return b''.join(entropy_list)
+    return b''.join(entropy_list).strip()
 
 def trim_bits(value, num_bits):
     # Masks the value to retain only the most significant 'num_bits' bits.
@@ -63,37 +60,45 @@ def generate_random_number(num_urls, num_measurements, random_bytes, bit_length,
         thread.join()
 
     entropy_bits = extract_entropy(rtt_folder)
-    combined_entropy_bits = combine_entropy_bits([entropy_bits])
     seed = prng.secrets.randbits(256).to_bytes(32, byteorder='big')
     drbg = prng.DRBG(seed)
     prng_value = drbg.generate(random_bytes)
 
     prng_value = trim_bits(int.from_bytes(prng_value, 'big'), bit_length)
-    combined_entropy_bits = trim_bits(int.from_bytes(combined_entropy_bits, 'big'), bit_length)
-    random_number = prng_value ^ combined_entropy_bits
+    entropy_bits = int.from_bytes(entropy_bits, 'big')
+
+    random_number = prng_value ^ entropy_bits
+    random_number = trim_bits(random_number, bit_length)
 
     return random_number
 
+def calculate_entropy(random_numbers):
+    # Calculate the entropy of the random numbers.
+    probabilities, _ = np.histogram(random_numbers, bins=255, density=True)
+    entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))  # Add a small value to avoid log(0)
+    return entropy
+
 def main():
     num_iterations = 1000
-    num_urls = 2
-    num_measurements = 2
-    random_bytes = 2
-    bit_length = 10
+    num_urls = 1
+    num_measurements = 1
+    random_bytes = 1
+    bit_length = 8
     rtt_folder = 'RTTS'
     url_data = 'top_websites2.txt'
- 
+
     random_numbers = []
 
     start_time = time.time()
-    for i in range(num_iterations):
-        random_number = generate_random_number(num_urls, num_measurements, random_bytes, bit_length, rtt_folder, url_data)
-        random_numbers.append(random_number)
-    elapsed_time = time.time() - start_time
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(generate_random_number, num_urls, num_measurements, random_bytes, bit_length, rtt_folder, url_data) for _ in range(num_iterations)]
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                random_numbers.append(future.result())
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
-    print("Generated random numbers:")
-    for i, number in enumerate(random_numbers, start=1):
-        print(f"Iteration {i}: {number}")
+    elapsed_time = time.time() - start_time
 
     print(f"Total elapsed time: {elapsed_time:.2f} seconds")
 
@@ -101,6 +106,16 @@ def main():
     with open('random_numbers.txt', 'w') as file:
         for number in random_numbers:
             file.write(f'{number}\n')
+
+    plt.figure(figsize=(8, 6))
+    plt.hist(random_numbers, bins=256, color='blue', density=True)
+    plt.title('Histogram of Randomly Generated Numbers')
+    plt.xlabel('Value')
+    plt.ylabel('Probability')
+    plt.savefig("test")
+
+    entropy = calculate_entropy(random_numbers)
+    print(f"Entropy of random numbers: {entropy:.6f} bits per symbol")
 
 if __name__ == "__main__":
     main()
