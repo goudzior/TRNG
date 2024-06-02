@@ -9,7 +9,7 @@ def hash_message(message: str) -> str:
     hash_object.update(message.encode('utf-8'))
     return hash_object.hexdigest()
 
-def generate_rsa_key_pair(key_size):
+def generate_rsa_key_pair():
     def select_prime():
         while True:
             prime_list = generator.generator()  # Generuj nową listę liczb pierwszych
@@ -32,7 +32,7 @@ def generate_rsa_key_pair(key_size):
     phi_n = (p - 1) * (q - 1)
     
     # Wybieramy liczbę e (public_exponent) względnie pierwszą z phi_n
-    e = 65537
+    e = 257
     
     # Obliczamy liczbę d (private_exponent) będącą odwrotnością modulo e względem phi_n
     d = pow(e, -1, phi_n)
@@ -59,11 +59,11 @@ def decrypt_message(encrypted_message: int, private_key: tuple) -> str:
 
 # Główna funkcja
 def main():
-    message = "To jest przykładowa wiadomość."
+    message = "test message"
     message_hash = hash_message(message)
     print(f"Skrót wiadomości: {message_hash}")
 
-    public_key, private_key = generate_rsa_key_pair(512)
+    public_key, private_key = generate_rsa_key_pair()
     print(f"Klucz publiczny: {public_key}")
     print(f"Klucz prywatny: {private_key}")
 
@@ -78,6 +78,43 @@ def main():
         print("Skrót wiadomości został poprawnie odszyfrowany.")
     else:
         print("Skrót wiadomości NIE został poprawnie odszyfrowany.")
+
+    print ("------TEST 1: próba odszyfrowania innym kluczem------")
+    _, private_key2 = generate_rsa_key_pair()
+    decrypted_message_hash2 = decrypt_message(encrypted_message, private_key2)
+    print(f"Odszyfrowany skrót wiadomości: {decrypted_message_hash}")
+
+    if decrypted_message_hash2 == message_hash:
+        print("Skrót wiadomości został poprawnie odszyfrowany.")
+    else:
+        print("Skrót wiadomości NIE został poprawnie odszyfrowany.")
+
+    print ("------TEST 2: Test integralności------")
+    public_key2, private_key2 = generate_rsa_key_pair()
+    decrypted_message_hash_different = decrypt_message(encrypted_message, private_key2)
+    print(f"Odszyfrowany skrót wiadomości: {decrypted_message_hash}")
+    
+    if decrypted_message_hash_different == message_hash:
+        print("Skrót wiadomości został poprawnie odszyfrowany.")
+    else:
+        print("Skrót wiadomości NIE został poprawnie odszyfrowany.")
+
+    message2 = "test message123"
+    message_hash2 = hash_message(message2)
+    print(f"Skrót wiadomości: {message_hash2}")
+
+    encrypted_message2 = encrypt_message(message2, public_key2)
+    print(f"Zaszyfrowany skrót wiadomości: {encrypted_message2}")
+
+    decrypted_message_hash = decrypt_message(encrypted_message2, private_key2)
+    print(f"Odszyfrowany skrót wiadomości: {decrypted_message_hash2}")
+
+    if decrypted_message_hash2 == message_hash2:
+        print("Skrót wiadomości został poprawnie odszyfrowany.")
+    else:
+        print("Skrót wiadomości NIE został poprawnie odszyfrowany.")
+
+    
 
 if __name__ == "__main__":
     main()
