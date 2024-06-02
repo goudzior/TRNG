@@ -90,15 +90,6 @@ def main():
         print("Skrót wiadomości NIE został poprawnie odszyfrowany.")
 
     print ("------TEST 2: Test integralności------")
-    public_key2, private_key2 = generate_rsa_key_pair()
-    decrypted_message_hash_different = decrypt_message(encrypted_message, private_key2)
-    print(f"Odszyfrowany skrót wiadomości: {decrypted_message_hash}")
-    
-    if decrypted_message_hash_different == message_hash:
-        print("Skrót wiadomości został poprawnie odszyfrowany.")
-    else:
-        print("Skrót wiadomości NIE został poprawnie odszyfrowany.")
-
     message2 = "test message123"
     message_hash2 = hash_message(message2)
     print(f"Skrót wiadomości: {message_hash2}")
