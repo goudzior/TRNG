@@ -1,0 +1,21 @@
+
+
+    num_bins = int(np.ceil(1 + np.log2(100000)))
+    plt.figure(figsize=(10, 6))
+    plt.hist(all_rtt_measurements, bins=317, color='blue', alpha=0.7, density=True)
+    plt.title('Histogram of RTTs')
+    plt.xlabel('RTT[ns]')
+    plt.ylabel('Probability')
+    plt.savefig('rtt_histogram.png')
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(random_numbers, bins=256, color='green', alpha=0.7, density=True)
+    plt.title('Histogram of random numbers')
+    plt.xlabel('Value')
+    plt.ylabel('Probability')
+    plt.savefig('random.png')
+        
+        # Write the contents of all RTT measurements to a file named "OH GOD"
+    with open('rtt_meas.txt', 'w') as file:
+        for rtt in all_rtt_measurements:
+            file.write(f'{rtt}\n')

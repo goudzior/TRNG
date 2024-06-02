@@ -81,13 +81,13 @@ def generate_random_number(num_urls, num_measurements, random_bytes, bit_length,
     random_number = prng_value ^ entropy_bits
     return random_number
 
-def main():
-    start_time = time.perf_counter()
-    num_iterations = 100500
+def generator():
+    #start_time = time.perf_counter()
+    num_iterations = 100
     num_urls = 1
-    num_measurements = 1
-    random_bytes = 1 
-    bit_length = 8
+    num_measurements = 5
+    random_bytes = 2 
+    bit_length = 16
     rtt_folder = 'RTTS'
     url_data = 'top_websites2.txt'
 
@@ -101,35 +101,13 @@ def main():
             except Exception as e:
                 print(f"An error occurred: {e}")
 
+    #end_time = time.perf_counter()  # End the timer
+    #execution_time = end_time - start_time  # Calculate the total execution time
+    
     # Save random numbers to a text file
     with open('random_numbers.txt', 'w') as file:
         for number in random_numbers:
             file.write(f'{number}\n')
 
-    num_bins = int(np.ceil(1 + np.log2(100000)))
-    plt.figure(figsize=(10, 6))
-    plt.hist(all_rtt_measurements, bins=317, color='blue', alpha=0.7, density=True)
-    plt.title('Histogram of RTTs')
-    plt.xlabel('RTT[ns]')
-    plt.ylabel('Probability')
-    plt.savefig('rtt_histogram.png')
-
-    plt.figure(figsize=(10, 6))
-    plt.hist(random_numbers, bins=256, color='green', alpha=0.7, density=True)
-    plt.title('Histogram of random numbers')
-    plt.xlabel('Value')
-    plt.ylabel('Probability')
-    plt.savefig('random.png')
-
-    end_time = time.perf_counter()  # End the timer
-    execution_time = end_time - start_time  # Calculate the total execution time
-
-    # Write the contents of all RTT measurements to a file named "OH GOD"
-    with open('rtt_meas.txt', 'w') as file:
-        for rtt in all_rtt_measurements:
-            file.write(f'{rtt}\n')
-    
-    print(f"Total execution time: {execution_time} seconds")
-
-if __name__ == "__main__":
-    main()
+    #print(f"Total execution time: {execution_time} seconds")
+    return random_numbers
