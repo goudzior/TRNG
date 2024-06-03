@@ -83,7 +83,7 @@ def generate_random_number(num_urls, num_measurements, random_bytes, bit_length,
 
 def generator():
     #start_time = time.perf_counter()
-    num_iterations = 2
+    num_iterations = 100
     num_urls = 1
     num_measurements = 5
     random_bytes = 17 

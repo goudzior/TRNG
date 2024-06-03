@@ -80,11 +80,11 @@ def main():
         print("Skrót wiadomości NIE został poprawnie odszyfrowany.")
 
     print ("------TEST 1: próba odszyfrowania innym kluczem------")
-    _, private_key2 = generate_rsa_key_pair()
-    decrypted_message_hash2 = decrypt_message(encrypted_message, private_key2)
-    print(f"Odszyfrowany skrót wiadomości: {decrypted_message_hash}")
+    public_key2, private_key2 = generate_rsa_key_pair()
+    decrypted_message_hash_diff_key = decrypt_message(encrypted_message, private_key2)
+    print(f"Odszyfrowany skrót wiadomości: {decrypted_message_hash_diff_key}")
 
-    if decrypted_message_hash2 == message_hash:
+    if decrypted_message_hash_diff_key == message_hash:
         print("Skrót wiadomości został poprawnie odszyfrowany.")
     else:
         print("Skrót wiadomości NIE został poprawnie odszyfrowany.")
@@ -97,10 +97,10 @@ def main():
     encrypted_message2 = encrypt_message(message2, public_key2)
     print(f"Zaszyfrowany skrót wiadomości: {encrypted_message2}")
 
-    decrypted_message_hash = decrypt_message(encrypted_message2, private_key2)
+    decrypted_message_hash2 = decrypt_message(encrypted_message2, private_key2)
     print(f"Odszyfrowany skrót wiadomości: {decrypted_message_hash2}")
 
-    if decrypted_message_hash2 == message_hash2:
+    if decrypted_message_hash2 == decrypted_message_hash:
         print("Skrót wiadomości został poprawnie odszyfrowany.")
     else:
         print("Skrót wiadomości NIE został poprawnie odszyfrowany.")
