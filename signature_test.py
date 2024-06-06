@@ -31,10 +31,10 @@ def generate_rsa_key_pair():
     # Obliczamy funkcję Eulera
     phi_n = (p - 1) * (q - 1)
     
-    # Wybieramy liczbę e (public_exponent) względnie pierwszą z phi_n
+    # Wybieramy liczbę e
     e = 65537
     
-    # Obliczamy liczbę d (private_exponent) będącą odwrotnością modulo e względem phi_n
+    # Obliczamy liczbę d 
     d = pow(e, -1, phi_n)
     
     # Zwracamy klucze publiczny i prywatny
